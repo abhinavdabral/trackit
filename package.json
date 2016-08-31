@@ -1,0 +1,30 @@
+{
+  "name": "trackit",
+  "version": "0.1.0",
+  "description": "To track elements' location in DOM within a container (or window) and invoke callbacks based on certain events, like when the element enters into the viewport of the container from Top, Right, Bottom or Left, a certain callback can be invoked.",
+  "main": "demo/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhinavdabral/trackit.git"
+  },
+  "keywords": [
+    "track",
+    "DOM",
+    "element",
+    "scroll",
+    "resize"
+  ],
+  "author": "abhinavdabral",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abhinavdabral/trackit/issues"
+  },
+  "homepage": "https://github.com/abhinavdabral/trackit#readme",
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-uglify": "^2.0.0"
+  }
+}
