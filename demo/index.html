@@ -32,30 +32,18 @@
             top: 0;
             text-align:center;
         }
-
         #tracker {
-            width: 300px;
-            height: 500px;
-            line-height: 2em;
-            position:fixed;
-            overflow-wrap:break-word;
-            top: 0;
-            left: 0;
-        }
-        #tracker2 {
             display:inline-block;
         }
     </style>
 </head>
 <body>
     <div class="fixed">
-        <h1>Find the box</h1>
-        <div id="tracker2">
+        <h1>TrackIt.js Demo</h1>
+        <h2>Find the box</h2>
+        <div id="tracker">
             &nbsp;
         </div>
-    </div>
-    <div id="tracker">
-        &nbsp;
     </div>
     
     <div class="container">
@@ -66,25 +54,59 @@
     <script src="../build/trackit.min.js"></script>
     <script>
         Trackit.track(document.getElementById("track-me"),{
-            enterTop:function(){
-                document.getElementById("tracker2").innerHTML="Box entered from Top";
+            inActions:
+            {
+                top : 
+                {
+                    onStart : function(){updateTracker("Enterring : Top");},
+                    onComplete : function(){updateTracker("Entered : Top");}
+                },
+                bottom : {
+                    onStart : function(){updateTracker("Enterring : Bottom");},
+                    onComplete : function(){updateTracker("Entered : Bottom");}
+                },
+                left : 
+                {
+                    onStart : function(){updateTracker("Enterring : Left");},
+                    onComplete : function(){updateTracker("Entered : Left");}
+                },
+                right : {
+                    onStart : function(){updateTracker("Enterring : Right");},
+                    onComplete : function(){updateTracker("Entered : Right");}
+                }    
             },
-
-            enterBottom :function(){
-                document.getElementById("tracker2").innerHTML="Box entered from Bottom";
-            },
-
-            enterLeft:function(){
-                document.getElementById("tracker2").innerHTML="Box entered from Left";
-            },
-
-            enterRight:function(){
-                document.getElementById("tracker2").innerHTML="Box entered from Right";
-            },
-            log:function(value){
-                document.getElementById("tracker").innerHTML=value;
+            outActions:
+            {
+                top : 
+                {
+                    onStart : function(){updateTracker("Leaving : Top");},
+                    onComplete : function(){updateTracker("Left : Top");}
+                },
+                bottom : {
+                    onStart : function(){updateTracker("Leaving : Bottom");},
+                    onComplete : function(){updateTracker("Left : Bottom");}
+                },
+                left : 
+                {
+                    onStart : function(){updateTracker("Leaving : Left");},
+                    onComplete : function(){updateTracker("Left : Left");}
+                },
+                right : {
+                    onStart : function(){updateTracker("Leaving : Right");},
+                    onComplete : function(){updateTracker("Left : Right");}
+                }       
             }
         });
+
+        var arr=[];
+        function updateTracker(newValue)
+        {
+            if(arr.length>=8){
+                arr.shift();
+            }
+            arr.push(newValue);
+            document.getElementById("tracker").innerHTML=(arr+"").split(",").join("<br>") ;
+        }
 
     </script>
 </body>

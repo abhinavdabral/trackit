@@ -2,38 +2,28 @@
 TrackIt.js
 
 The purpose of this library is to track elements' position
-inside DOM upon scrolling, with respect to the container's
-viewport. Also, callbacks can be invoked on certain events
-when the element enters or leaves the viewport of the
-container and/or reaches middle of it, through various
-directions.
+inside DOM upon scrolling (and resizing), with respect to
+the container's viewport. Also, callbacks can be invoked
+on certain events when the element enters or leaves the
+viewport of the container and/or reaches middle* of it,
+through various directions.
 
-version: 0.1.0
-last modified: 31/Aug/2016 by Abhinav Dabral
-author: Abhinav Dabral (@abhinavdabral)
-email: dabral.abhinav@gmail.com
-website: http://www.abhinavdabral.com
-license : MIT
+Version: 0.1.0
+Last modified: 31/Aug/2016 by Abhinav Dabral
+Author: Abhinav Dabral (@abhinavdabral)
+Email: abhinavdabral@live.com
+Website: https://github.com/abhinavdabral/trackit
+License : MIT
 ----------------------------------------------------------*/
 
 /* TODO
 
 0. Logic to check container is added but currently we're just tracking elements right off the 'window'. It should be able to be called from any container.
 -- Possibly we can just add another properly to object stored in _elements where we can keep the container element's reference.
-1. Ability to call the callback single or multiple times.
+1. Ability to call the callback single or multiple times. (Currently it gets called single time upon every action, but doesn't repeats itself consequently)
 2. If the element is animating then it should be upto programmer whether to track it or not.
-3. Need to add offset property based on which the events shall be fired. (probably add some tolerance property as well)
-4. Related to #1, Check for viewport. If the element has entered viewport once, and not left, then no need to trigger any call backs until it has left the viewport and entered back again.
-
-5. Rename Actions functions as *Action
-
-Later. Remove duplicate code, compress without recuding readability.
-
-
-From Viewport to {top, bottom, left, right} -> ExitViewport
-To Viewport from {top, bottom, left, right} -> EnterViewport
-From Middle to {top, bottom, left, right}   -> ExitMiddle
-To Middle from {top, bottom, left, right}   -> EnterMiddle
+3. Need to add offset property based on which the events shall be fired. (probably add some tolerance property as well).
+4. Need to work on Middle ones (enter/exit in 4 directions from Middle).
 
 */
 
@@ -57,6 +47,7 @@ To Middle from {top, bottom, left, right}   -> EnterMiddle
 
         var _track = function _track(element, options){             // To start tracking an element.
             
+            // Futureproofing, in case when you need to modify options of particular element (Add or remove certain callbacks and such)
             if(typeof element === "number")
                 if(_elements[element])
                     element = _elements[element];
@@ -79,20 +70,16 @@ To Middle from {top, bottom, left, right}   -> EnterMiddle
                 };
             }
 
-                // Also, if the element has an event callback, we put that along with it's object it in the _elements array.
+            // Also, if the element has an event callback, we put that along with it's object it in the _elements array.
 
-                if(options.enterTop)
-                    _elements[index].enterTop = options.enterTop;
-                if(options.enterBottom)
-                    _elements[index].enterBottom = options.enterBottom;
-                if(options.enterLeft)
-                    _elements[index].enterLeft = options.enterLeft;
-                if(options.enterRight)
-                    _elements[index].enterRight = options.enterRight;
-                if(options.log)
-                    _elements[index].log = options.log;
+            if(options.inActions)   _elements[index].inActions = options.inActions;
+            if(options.outActions)  _elements[index].outActions = options.outActions;
 
-                return index;   // And finally return the Index, or Tracking ID of that element (so it can be removed later, or modified and such)
+            // Just a log callback
+            if(options.log)
+                _elements[index].log = options.log;
+
+            return index;   // And finally return the Index, or Tracking ID of that element (so it can be removed later, or modified and such)
             
         }
 
@@ -148,100 +135,216 @@ To Middle from {top, bottom, left, right}   -> EnterMiddle
                 var leftEdgeFromRight = rightEdgeFromRight + e.width;               // Distance of the left edge of the element from the right of the viewport.
 
                 element.current ={
-                    topEdgeFromTop:         e.top,                      // Distance of the top edge of the element from the top of the viewport.
-                    rightEdgeFromRight:     rightEdgeFromRight,
-                    bottomEdgeFromBottom:   bottomEdgeFromBottom,                                                          
-                    leftEdgeFromLeft:       e.left,                     // Distance of the left edge of the element from the left of the viewport.
+                    topTop:     e.top,                      // Distance of the top edge of the element from the top of the viewport.
+                    rightRight: rightEdgeFromRight,
+                    botBot:     bottomEdgeFromBottom,                                                          
+                    leftLeft:   e.left,                     // Distance of the left edge of the element from the left of the viewport.
 
-                    topEdgeFromBottom:      topEdgeFromBottom,
-                    rightEdgeFromLeft:      e.right,                    // Distance of the right edge of the element from the left of the viewport.
-                    bottomEdgeFromTop:      e.bottom,                   // Distance of the bottom edge of the element from the top of the viewport.
-                    leftEdgeFromRight:      leftEdgeFromRight,
+                    topBot:     topEdgeFromBottom,
+                    rightLeft:  e.right,                    // Distance of the right edge of the element from the left of the viewport.
+                    botTop:     e.bottom,                   // Distance of the bottom edge of the element from the top of the viewport.
+                    leftRight:  leftEdgeFromRight,
 
-                    middleX:                rightEdgeFromRight-e.left,  // X (horizontal) distance of the 'center' of the element from the 'center' of the viewport.
-                    middleY:                bottomEdgeFromBottom-e.top, // Y (vertical) distance of the 'middle' of the element from the 'middle' of the viewport.
+                    middleX:    rightEdgeFromRight-e.left,  // X (horizontal) distance of the 'center' of the element from the 'center' of the viewport.
+                    middleY:    bottomEdgeFromBottom-e.top, // Y (vertical) distance of the 'middle' of the element from the 'middle' of the viewport.
 
-                    width:                  e.width,                    // Element's width
-                    height:                 e.height                    // Element's height
+                    width:      e.width,                    // Element's width
+                    height:     e.height                    // Element's height
                 };
+
+                if(element.current.viewport)                            // If element has some old "current" viewport value stored in it
+                    element.last.viewport = +element.current.viewport;  // Back it up into "last"
+                element.current.viewport = _getViewport(element);       // And then update the "current" to the actual current value.
 
                 // If the element has current and last values, then check for events.
                 if(element.current && element.last){                    
                     
-                    // Checking any callbacks attached to certain events and calling if those events are fired.
+                    // Checking if the element is in Viewport, if so, only then check for certain events.                    
+                    if(!(element.current.viewport === 0 && element.last.viewport===0))
+                        // If element neither is, nor it was outside the viewport completely, only then it can leave the viewport.
+                        if(element.outActions)
+                            _exitViewport(element);    
+                    if(!(element.current.viewport === 1 && element.last.viewport===1))
+                        // If element neither is, nor it was inside the viewport completely, only then it can enter the viewport.
+                        if(element.inActions)
+                            _enterViewport(element);
+                }
 
-                    // Checking if the element is in Viewport, if so, only then check for certain events.
-                    if(_isInViewport(element)){
+                if(element.log)
+                        _log(element.trackingId, element.log);  
 
-                        if(element.enterTop)
-                         _enterTop(element.trackingId, element.enterTop);
-
-                        if(element.enterBottom)
-                            _enterBottom(element.trackingId, element.enterBottom);
-
-                        if(element.enterLeft)
-                            _enterLeft(element.trackingId, element.enterLeft);
-
-                        if(element.enterRight)
-                            _enterRight(element.trackingId, element.enterRight);
-                    }
-
-                    if(element.log)
-                        _log(element.trackingId, element.log);
-                } 
             },null);
         }
 
-        function _isInViewport(element){
+        function _getViewport(element){
             if(
-                ((element.current.topEdgeFromBottom<=0) && (element.current.bottomEdgeFromBottom<=0)) ||
-                ((element.current.bottomEdgeFromTop<=0) && (element.current.topEdgeFromTop<=0)) ||
-                ((element.current.rightEdgeFromRight<=0) && (element.current.leftEdgeFromRight<=0)) ||
-                ((element.current.rightEdgeFromLeft<=0) && (element.current.leftEdgeFromLeft<=0))
+                (element.current.topTop > 0) && (element.current.botBot > 0) &&
+                (element.current.leftLeft > 0) && (element.current.rightRight > 0)
             )
-            return false;
-            else return true;
-        }
-        /*
-        function _enterTop(trackingId, callback){
-            var e = _elements[trackingId];
-            var curr = e.current;
-            var last = e.last;
-            if((curr.bottomEdgeFromTop>0)&&(curr.topEdgeFromBottom>0))
-                if(curr.bottomEdgeFromTop>last.bottomEdgeFromTop)
-                    callback();
+                return 1;   // Completely inside
+            else if (
+                (element.current.botTop < 0) || (element.current.topBot < 0) ||
+                (element.current.leftRight < 0) || (element.current.rightLeft < 0)
+            )
+                return 0;   // Completely outside
+            else
+                return -1;  // Partially inside
         }
 
-        function _enterBottom(trackingId, callback){
-            var e = _elements[trackingId];
-            var curr = e.current;
-            var last = e.last;
-            if((curr.topEdgeFromBottom>0)&&(curr.bottomEdgeFromTop>0))
-                if(curr.topEdgeFromBottom>last.topEdgeFromBottom)
+        function _isInMiddle(element, callback){
+            if( _isInMiddleX(element) || _isInMiddleY(element) ){
+                if(typeof callback==="function")
                     callback();
+                return true;
+            }
+            else return false;
         }
 
-        function _enterLeft(trackingId, callback){
-            var e = _elements[trackingId];
-            var curr = e.current;
-            var last = e.last;
-            if((curr.rightEdgeFromLeft>0)&&(curr.leftEdgeFromRight>0))
-                if(curr.rightEdgeFromLeft>last.rightEdgeFromLeft)
+        function _isInMiddleX(element, callback){
+            var tX = element.tX || 20;
+            if((element.current.middleX>(0-tX)) && (element.current.middleX<(0+tX))){
+                if(typeof callback==="function")
                     callback();
+                return true;
+            }
+            else return false;
         }
 
-        function _enterRight(trackingId, callback){
-            var e = _elements[trackingId];
-            var curr = e.current;
-            var last = e.last;
-            if((curr.leftEdgeFromRight>0)&&(curr.rightEdgeFromLeft>0))
-                if(curr.leftEdgeFromRight>last.leftEdgeFromRight)
+        function _isInMiddleY(element, callback){
+            var tY = element.tX || 20;
+            if((element.current.middleY>(0-tY)) && (element.current.middleY<(0+tY))){
+                if(typeof callback==="function")
                     callback();
+                return true;
+            }
+            else return false;
         }
-        */
 
+        function _enterViewport(element){
+
+            var curr = element.current;
+            var last = element.last;
+
+            // Putting all the conditional statements here.
+            var enteringTop     = ( (element.inActions.top) && (curr.botTop > last.botTop) && (curr.botTop > 0) && (curr.topBot>0) );
+            var enteringBottom  = ( (element.inActions.bottom) && (curr.topBot > last.topBot) && (curr.topBot > 0) && (curr.botTop>0) );
+            var enteringLeft    = ( (element.inActions.left) && (curr.rightLeft > last.rightLeft) && (curr.rightLeft > 0) && (curr.leftRight >0) );
+            var enteringRight   = ( (element.inActions.right) && (curr.leftRight > last.leftRight) && (curr.leftRight > 0) && (curr.rightLeft > 0) );
+
+            var entering = function(){
+                if(enteringTop && (curr.topTop < 0) )
+                    _call(element.inActions.top.onStart);
+
+                if(enteringBottom && (curr.botBot < 0) )
+                    _call(element.inActions.bottom.onStart);
+
+                if(enteringLeft && (curr.leftLeft < 0) )
+                    _call(element.inActions.left.onStart);
+
+                if(enteringRight && (curr.rightRight < 0) )
+                    _call(element.inActions.right.onStart);
+            }
+
+            if(element.current.viewport === -1 && element.last.viewport!==-1) // Entering
+            {
+                entering();
+            }
+
+            if(element.current.viewport === 1 && element.last.viewport!==1) // Entered
+            {
+                if(element.last.viewport === 0)
+                {
+                    // This shall be called in such cases when the scrolling is so fast that it completely skips "Entering" phase,
+                    // so we have to induce it ourself, just to be sure that flow doesn't breaks.
+                    // It's still not perfect, as at times it still skips it, but better than before.
+                    entering();
+                }
+
+                if(enteringTop){
+                    _call(element.inActions.top.onComplete);    // Entered
+                    _call(element.inActions.top);               // Just in case when onStart and onComplete are not definited seperately.
+                }
+                if(enteringBottom){
+                    _call(element.inActions.bottom.onComplete);  
+                    _call(element.inActions.bottomtop);          
+                }
+                if(enteringLeft){
+                    _call(element.inActions.left.onComplete);    
+                    _call(element.inActions.left);               
+                }
+                if(enteringRight){
+                    _call(element.inActions.right.onComplete);   
+                    _call(element.inActions.right);              
+                }
+            }
+        }
+
+        function _exitViewport(element){
+
+            var curr = element.current;
+            var last = element.last;
+
+            // Putting all the conditional statements here.
+            var exitingTop      = ( (element.outActions.top) && (curr.botTop < last.botTop) && (curr.topTop < 0) );
+            var exitingBottom   = ( (element.outActions.bottom) && (curr.topBot < last.topBot) && (curr.botBot < 0) );
+            var exitingLeft     = ( (element.outActions.left) && (curr.rightLeft < last.rightLeft) && (curr.leftLeft < 0) );
+            var exitingRight    = ( (element.outActions.right) && (curr.leftRight < last.leftRight) && (curr.rightRight < 0) );
+
+            var leaving = function(){
+                if(exitingTop)
+                    _call(element.outActions.top.onStart);
+                if(exitingBottom)
+                    _call(element.outActions.bottom.onStart);
+                if(exitingLeft)
+                    _call(element.outActions.left.onStart);
+                if(exitingRight)
+                    _call(element.outActions.right.onStart);
+            }
+
+            if(element.current.viewport === -1 && element.last.viewport!==-1) // Leaving
+            {
+                leaving();
+            }
+
+            if(element.current.viewport === 0 && element.last.viewport!==0) // Left
+            {
+                if(element.last.viewport === 0){
+
+                    // This shall be called in such cases when the scrolling is so fast that it completely skips "Entering" phase,
+                    // so we have to induce it ourself, just to be sure that flow doesn't breaks.
+                    // It's still not perfect, as at times it still skips it, but better than before.
+                    leaving();
+                }
+
+                if(exitingTop){
+                    _call(element.outActions.top.onComplete);    // Left
+                    _call(element.outActions.top);               // Just in case when onStart and onComplete are not definited seperately.
+                }
+                if(exitingBottom){
+                    _call(element.outActions.bottom.onComplete);    
+                    _call(element.outActions.bottomtop);            
+                }
+                if(exitingLeft){
+                    _call(element.outActions.left.onComplete);   
+                    _call(element.outActions.left);              
+                }
+                if(exitingRight){
+                    _call(element.outActions.right.onComplete); 
+                    _call(element.outActions.right);            
+                }
+            }
+        }
+
+        // Just a log function, primarily for debugging purposes for now. MAY get modified or removed in future.
         function _log(trackingId, callback){
             callback(JSON.stringify(_elements[trackingId].current).split(",").join("<br>"));
+        }
+
+        // A Calling function. Why? Because I am too lazy to check for all callbacks. So I just call them through this one
+        // and it checks if the callbacks are function, before calling them.
+        function _call(fn){
+            if(typeof fn === "function")
+                fn();
         }
 
         return {
@@ -251,5 +354,6 @@ To Middle from {top, bottom, left, right}   -> EnterMiddle
         }
     }
 
+    //  Exporting the Library to "global"
     global.Trackit = trackit();
 })(window);
