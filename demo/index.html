@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TrackIt Demo</title>
+    <style>
+        body{
+            padding: 0;
+            margin: 0;
+            width: 250%;
+            height: 120%;
+            font-family: sans-serif;
+        }
+
+        .container{
+            text-align:center;
+        }   
+
+        #track-me{
+            background-color: #fc0;
+            width: 20px;
+            display: inline-block;
+            height: 20px;
+            margin-top: 20%;
+            margin-bottom: 20%;
+        }
+
+        .fixed {
+            position:fixed;
+            width: 100%;
+            left:0;
+            top: 0;
+            text-align:center;
+        }
+
+        #tracker {
+            width: 300px;
+            height: 500px;
+            line-height: 2em;
+            position:fixed;
+            overflow-wrap:break-word;
+            top: 0;
+            left: 0;
+        }
+        #tracker2 {
+            display:inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="fixed">
+        <h1>Find the box</h1>
+        <div id="tracker2">
+            &nbsp;
+        </div>
+    </div>
+    <div id="tracker">
+        &nbsp;
+    </div>
+    
+    <div class="container">
+        <div id="track-me">
+            &nbsp;
+        </div>
+    </div>
+    <script src="../build/trackit.min.js"></script>
+    <script>
+        Trackit.track(document.getElementById("track-me"),{
+            enterTop:function(){
+                document.getElementById("tracker2").innerHTML="Box entered from Top";
+            },
+
+            enterBottom :function(){
+                document.getElementById("tracker2").innerHTML="Box entered from Bottom";
+            },
+
+            enterLeft:function(){
+                document.getElementById("tracker2").innerHTML="Box entered from Left";
+            },
+
+            enterRight:function(){
+                document.getElementById("tracker2").innerHTML="Box entered from Right";
+            },
+            log:function(value){
+                document.getElementById("tracker").innerHTML=value;
+            }
+        });
+
+    </script>
+</body>
+</html>
