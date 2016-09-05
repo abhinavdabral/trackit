@@ -19,7 +19,7 @@ Currently following events can be tracked :
 
 2. Under your page's script, add the following code
 
-```javascript
+ ```javascript
  Trackit.track(
      document.getElementById("track-me"),	// this is the element that we want to track
      {
@@ -39,7 +39,7 @@ Currently following events can be tracked :
          }
        }
  });
-```
+ ```
 3. That's it.
 
 If it seems confusing, then wait for a better documentation, that I'll prepare as soon as all primary features of this library are implemented properly.
