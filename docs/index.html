@@ -2,40 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TrackIt Demo</title>
-    <style>
-        body{
-            padding: 0;
-            margin: 0;
-            width: 250%;
-            height: 120%;
-            font-family: sans-serif;
-        }
+    <title>TrackIt.js Demo</title>
 
-        .container{
-            text-align:center;
-        }   
+    <meta name=viewport content="width=device-width, initial-scale=1.0, minimum-scale=0.5 maximum-scale=1.0"/>
+    <meta name="description" content="TrackIt.js allows tracking of DOM elements upon scrolling and resizing. Events from all four primary direction can be triggered when the element is entering, has entered, is leaving or has left the viewport.">
 
-        #track-me{
-            background-color: #fc0;
-            width: 20px;
-            display: inline-block;
-            height: 20px;
-            margin-top: 20%;
-            margin-bottom: 20%;
-        }
+    <meta itemprop="name" content="TrackIt.js">
+    <meta itemprop="description" content="TrackIt.js allows tracking of DOM elements upon scrolling and resizing. Events from all four primary direction can be triggered when the element is entering, has entered, is leaving or has left the viewport.">
+    
+    <meta name="web_author" content="Abhinav Dabral">
 
-        .fixed {
-            position:fixed;
-            width: 100%;
-            left:0;
-            top: 0;
-            text-align:center;
-        }
-        #tracker {
-            display:inline-block;
-        }
-    </style>
+    <link rel="canonical" href="https://abhinavdabral.github.io/trackit/" />
+    <link href="https://plus.google.com/+AbhinavDabral" rel=publisher />
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@github">
+    <meta name="twitter:title" content="TrackIt.js">
+    <meta name="twitter:description" content="TrackIt.js allows tracking of DOM elements upon scrolling and resizing. Events from all four primary direction can be triggered when the element is entering, has entered, is leaving or has left the viewport.">
+    <meta name="twitter:creator" content="@abhinavdabral">
+    <!--meta name="twitter:image" content="http://www.abhinavdabral.com/default-image.jpg"-->
+
+    <meta property="og:title" content="TrackIt.js" />
+    <meta property="og:site_name" content="TrackIt.js"/>
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abhinavdabral.github.io/trackit/"/>
+    <!--meta property="og:image" content="http://www.abhinavdabral.com/default-image.jpg" /-->
+    <meta property="og:description" content="TrackIt.js allows tracking of DOM elements upon scrolling and resizing. Events from all four primary direction can be triggered when the element is entering, has entered, is leaving or has left the viewport." />
+
+    <!--link rel="icon" type="image/png" href="favicon.png">
+    <link rel="shortcut icon" href="favicon.ico" type="image/vnd.microsoft.icon"-->
+    
+    <link rel="stylesheet" href="style.min.css">
+
 </head>
 <body>
     <div class="fixed">
@@ -45,6 +43,9 @@
             &nbsp;
         </div>
     </div>
+
+    <div id="log">
+        </div>
     
     <div class="container">
         <div id="track-me">
@@ -95,7 +96,8 @@
                     onStart : function(){updateTracker("Leaving : Right");},
                     onComplete : function(){updateTracker("Left : Right");}
                 }       
-            }
+            },
+            log : mylog
         });
 
         var arr=[];
@@ -106,6 +108,10 @@
             }
             arr.push(newValue);
             document.getElementById("tracker").innerHTML=(arr+"").split(",").join("<br>") ;
+        }
+
+        function mylog(value){
+            document.getElementById("log").innerHTML = value;
         }
 
     </script>
