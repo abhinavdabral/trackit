@@ -43,8 +43,6 @@ License : MIT
         var _windowEvents       = false;    // To store window Events (to prevent multiple events)
         var _containerEvents    = [];    // To store container Events;
 
-        //var totalCalls=0;   // Checking performance
-
         function _addEventListener(event, container){
             if(window.addEventListener){
                 container.addEventListener(event,_scrollHandler,false);
@@ -241,14 +239,13 @@ License : MIT
                     element.current["viewport"+axis] = vp;
                 }, null);
 
-                //console.log(((element.current.viewportX!=0) && (element.current.viewportY!=0)));
-
                 if(element.last && !((element.current.viewportX===0) && (element.current.viewportY===0))){
                     
                     var inActions = element.inActions;
                     var outActions = element.outActions;
 
                     _axes.reduce(function(undefined, axis){
+                        if(element.current["viewport"+((axis==="X")?"Y":"X")]===0) return;   // If the other axis' viewport is 0, no point of proceeding.                     
                         var vp = element.current["viewport"+axis];      // Current Viewport
                         var lvp = element.last["viewport"+axis];        // Last Viewport
                         var delta = element.current["delta"+axis];      // Delta
@@ -270,13 +267,13 @@ License : MIT
                             else if((vp==1) && inActions)
                             {
                                 if(delta < 0){
-                                    if(lvp==0)  // in case "Leaving" part was skipped
-                                        _call(inActions[_directions[axis][1]], false); //Leaving from Left or Up
+                                    if(lvp==0)  // in case "Enterring" part was skipped
+                                        _call(inActions[_directions[axis][1]], false); //Enterring from Left or Up
                                     _call(inActions[_directions[axis][1]], true); //Enter from Right or Down
                                 }
                                 else{
-                                    if(lvp==0)  // in case "Leaving" part was skipped
-                                        _call(inActions[_directions[axis][0]], false); //Leaving from Left or Up
+                                    if(lvp==0)  // in case "Enterring" part was skipped
+                                        _call(inActions[_directions[axis][0]], false); //Enterring from Left or Up
                                     _call(inActions[_directions[axis][0]], true); //Enter from Left or Up
                                 }
                             }
@@ -419,9 +416,10 @@ License : MIT
             },null);
 
             // Checking performance
-            /*var endTimer = performance.now();
-            console.log("Scroll Event Handler took :  " + Math.floor(endTimer-startTimer) + "ms. "+totalCalls+" calls made.");
-            totalCalls=0;*/
+            /*
+            var endTimer = performance.now();
+            console.log("Scroll Event Handler took :  " + Math.floor(endTimer-startTimer) + "ms. ");
+            */
         }
 
                 
@@ -434,11 +432,6 @@ License : MIT
         // A Calling function. Why? Because I am too lazy to check for all callbacks. So I just call them through this one
         // and it checks if the callbacks are function, before calling them.
         function _call(fn, checkOnComplete){
-            //totalCalls++;
-            //setTimeout(_Call, 0, fn, checkOnComplete);
-            _Call(fn, checkOnComplete);
-        }
-        function _Call(fn, checkOnComplete){
             if(typeof fn === "function")
                 fn();
             else if(typeof fn === "object"){
