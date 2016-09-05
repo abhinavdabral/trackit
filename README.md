@@ -20,7 +20,7 @@ Currently following events can be tracked :
 2. Under your page's script, add the following code
 
 ```javascript
-   Trackit.track(
+ Trackit.track(
      document.getElementById("track-me"),	// this is the element that we want to track
      {
        inActions : {	// For entry actions (as in, when element is entering viewport)
@@ -38,7 +38,7 @@ Currently following events can be tracked :
            onComplete : function(){ /* Do Stuff here */ }
          }
        }
-     });
+ });
 ```
 3. That's it.
 
@@ -49,11 +49,11 @@ If it seems confusing, then wait for a better documentation, that I'll prepare a
 ### Syntax
 
 - Track
-```javascript
-var trackingId = Tracking.track([element],[options]);
+  ​```javascript
+  var trackingId = Tracking.track([element],[options]);
 ```
 - Untrack
-```javascript
+​```javascript
 Tracking.untrack([trackingId]);
 ```
 
@@ -90,12 +90,13 @@ Tracking.untrack([trackingId]);
   - `right`
 
 
-Each of the directions events have two sub-events :
+Each of the directions events have two sub-events, where you can pass your callbacks :
 
 - `onStart` - When the element is leaving/entering the viewport
 - `onComplete` - When the element has left/entered the viewport
 
-Where you can pass your custom callbacks. If you pass callback directly to the direction even (without specifying `onStart` or `onComplete`, then the callback executes same as it would execute in case of `onComplete`)
+> **NOTE :** If you pass callback directly to the direction even (without specifying `onStart` or `onComplete`, then the callback executes same as it would execute in case of `onComplete`)
+>
 
 
 ## Author
@@ -105,3 +106,9 @@ Abhinav Dabral (abhinavdabral)
 ## License
 
 MIT
+
+##Change Log
+ - v0.2.0 (5th Sept, 2016)
+  - Rewritten most of it, in a better way with lesser code.
+ - v0.1.0 (2nd Sept, 2016)
+  - First commit
